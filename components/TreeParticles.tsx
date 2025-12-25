@@ -5,13 +5,13 @@ import { AppMode } from '../App';
 
 const TREE_HEIGHT = 8;
 const TREE_BASE_RADIUS = 3.5;
-const TREE_PARTICLE_COUNT = 6000; // Increased density for luxury feel
+const TREE_PARTICLE_COUNT = 6000;
 const RIBBON_PARTICLE_COUNT = 2000;
 
 // Color Palette
 const COLOR_INK_GREEN_DARK = new THREE.Color('#011a09'); 
 const COLOR_INK_GREEN_LIGHT = new THREE.Color('#0f3d1e'); 
-const COLOR_LUXURY_GOLD = new THREE.Color('#FFD700'); // Pure Gold
+const COLOR_LUXURY_GOLD = new THREE.Color('#FFD700'); 
 
 const LIGHT_COLORS = [
   new THREE.Color('#ff0044'), // Holiday Red
@@ -58,18 +58,13 @@ const TreeParticles: React.FC<TreeParticlesProps> = ({ mode }) => {
       treePos[i * 3 + 2] = tz;
 
       // --- Luxury Color Logic ---
-      // Determine if particle is on the "Outer Shell" (The visual surface)
-      // r / rMax > 0.85 means it's in the outer 15% of the radius
       const isOuterShell = rMax > 0.1 && (r / rMax) > 0.85;
 
       const isLight = Math.random() > 0.88; // 12% are bulbs
 
       if (isLight) {
-        // Lights
         if (isOuterShell && Math.random() > 0.4) {
-            // Even lights on the outside are biased towards Gold/White for luxury
             tempColor.copy(COLOR_LUXURY_GOLD);
-            // Make them extra bright
             sizes[i] = Math.random() * 6 + 5;
         } else {
             const lightCol = LIGHT_COLORS[Math.floor(Math.random() * LIGHT_COLORS.length)];
@@ -77,18 +72,14 @@ const TreeParticles: React.FC<TreeParticlesProps> = ({ mode }) => {
             sizes[i] = Math.random() * 5 + 3;
         }
       } else {
-        // Leaves / Structure
         if (isOuterShell && Math.random() > 0.45) {
-            // "Gilded Tips": 55% of outer leaves are Gold
             tempColor.copy(COLOR_LUXURY_GOLD);
-            // Vary slightly to look like gold dust
             const shade = Math.random();
-            if (shade > 0.8) tempColor.offsetHSL(0, 0, 0.2); // Sparkle
-            else tempColor.multiplyScalar(0.8); // Muted gold
+            if (shade > 0.8) tempColor.offsetHSL(0, 0, 0.2); 
+            else tempColor.multiplyScalar(0.8); 
 
             sizes[i] = Math.random() * 3 + 1.5; 
         } else {
-            // Inner Depth / Ink Green
             const mix = Math.random();
             tempColor.lerpColors(COLOR_INK_GREEN_DARK, COLOR_INK_GREEN_LIGHT, mix * mix);
             sizes[i] = Math.random() * 4 + 1;
@@ -99,7 +90,7 @@ const TreeParticles: React.FC<TreeParticlesProps> = ({ mode }) => {
       colors[i * 3 + 1] = tempColor.g;
       colors[i * 3 + 2] = tempColor.b;
 
-      // Scatter Velocities (Random direction)
+      // Scatter Velocities
       scatterVel[i * 3] = (Math.random() - 0.5) * 12;
       scatterVel[i * 3 + 1] = (Math.random() - 0.5) * 12;
       scatterVel[i * 3 + 2] = (Math.random() - 0.5) * 12;
@@ -110,7 +101,7 @@ const TreeParticles: React.FC<TreeParticlesProps> = ({ mode }) => {
 
   // Use a separate buffer for current positions that updates every frame
   const currentPositions = useMemo(() => {
-    return new Float32Array(targets.treePos); // Start at tree
+    return new Float32Array(targets.treePos); 
   }, [targets]);
 
   // Ribbon setup
@@ -161,13 +152,11 @@ const TreeParticles: React.FC<TreeParticlesProps> = ({ mode }) => {
             const vy = targets.scatterVel[idx + 1];
             const vz = targets.scatterVel[idx + 2];
             
-            // Expansion breathing effect
             tx = targets.treePos[idx] + vx * (Math.sin(time * 0.5) + 1.5);
             ty = targets.treePos[idx + 1] + vy * (Math.cos(time * 0.3) + 1.5);
             tz = targets.treePos[idx + 2] + vz * (Math.sin(time * 0.7) + 1.5);
         }
 
-        // Lerp
         positions[idx] += (tx - positions[idx]) * lerpFactor;
         positions[idx + 1] += (ty - positions[idx + 1]) * lerpFactor;
         positions[idx + 2] += (tz - positions[idx + 2]) * lerpFactor;
@@ -188,7 +177,6 @@ const TreeParticles: React.FC<TreeParticlesProps> = ({ mode }) => {
         
         ribbonRef.current.scale.set(newScale, newScale, newScale);
         ribbonRef.current.rotation.y = -time * 0.1;
-        // Ribbon is always visible (scaled appropriately)
         ribbonRef.current.visible = true;
     }
   });
@@ -218,7 +206,7 @@ const TreeParticles: React.FC<TreeParticlesProps> = ({ mode }) => {
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.15}
+          size={0.2} // Increased from 0.15 for better visibility
           vertexColors
           transparent
           opacity={0.9}
@@ -246,7 +234,7 @@ const TreeParticles: React.FC<TreeParticlesProps> = ({ mode }) => {
         </bufferGeometry>
         <pointsMaterial
           color="#ffffff" 
-          size={0.1}
+          size={0.15} // Increased size
           transparent
           opacity={0.6}
           sizeAttenuation={true}

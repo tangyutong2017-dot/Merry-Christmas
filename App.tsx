@@ -1,11 +1,21 @@
 import React, { Suspense, useState, useCallback, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, Html } from '@react-three/drei';
 import Experience from './components/Experience';
 import GestureHandler from './components/GestureHandler';
 import CosmicBackground from './components/CosmicBackground';
 
 export type AppMode = 'tree' | 'scatter';
+
+// Simple Loader Component
+const Loader = () => (
+  <Html center>
+    <div className="flex flex-col items-center justify-center">
+      <div className="w-12 h-12 border-4 border-amber-500/30 border-t-amber-500 rounded-full animate-spin mb-4"></div>
+      <p className="text-amber-500 font-cinzel text-sm tracking-widest animate-pulse">LOADING EXPERIENCE...</p>
+    </div>
+  </Html>
+);
 
 const App: React.FC = () => {
   const [mode, setMode] = useState<AppMode>('tree');
@@ -48,7 +58,6 @@ const App: React.FC = () => {
     <div className="w-full h-screen bg-black relative overflow-hidden">
       
       {/* --- UI LAYER --- */}
-      {/* Wrapper with pointer-events-none to allow clicking through to canvas, but enable children interaction */}
       <div className="absolute inset-0 z-10 pointer-events-none">
         
         {/* Top Left: Dedication & Title */}
@@ -62,7 +71,7 @@ const App: React.FC = () => {
             </p>
         </div>
 
-        {/* Bottom Left: Music Controls (Enable pointer events) */}
+        {/* Bottom Left: Music Controls */}
         <div className="absolute bottom-8 left-8 flex flex-col gap-3 items-start pointer-events-auto">
             <audio ref={audioRef} onEnded={() => setIsPlaying(false)} loop />
             <input 
@@ -116,24 +125,20 @@ const App: React.FC = () => {
       {/* --- 3D SCENE --- */}
       <Canvas
         dpr={[1, 2]} 
-        // Set camera to frontal view directly
         camera={{ position: [0, 1.5, 18], fov: 40, near: 0.1, far: 100 }}
         gl={{ 
           antialias: true,
-          alpha: false, 
+          alpha: false, // Ensure black background is rendered
           stencil: false,
           depth: true,
-          toneMappingExposure: 1.2
+          toneMappingExposure: 1.5 // Slightly increased exposure
         }}
       >
         <color attach="background" args={['#000000']} />
         
-        <Suspense fallback={null}>
-            {/* Background & Atmosphere */}
+        <Suspense fallback={<Loader />}>
             <CosmicBackground />
             <fogExp2 attach="fog" args={['#000000', 0.015]} />
-
-            {/* MAIN: Experience */}
             <Experience mode={mode} />
         </Suspense>
 

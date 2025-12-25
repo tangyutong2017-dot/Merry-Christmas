@@ -14,8 +14,6 @@ const Experience: React.FC<ExperienceProps> = ({ mode }) => {
       {/* Subtle Ambient Lighting for Scene */}
       <ambientLight intensity={0.1} />
       
-      {/* Note: CosmicBackground and Fog are now in App.tsx to persist during transition */}
-
       {/* The Particle Tree with Morphing Logic */}
       <group position={[0, -2.5, 0]}>
         <TreeParticles mode={mode} />
@@ -27,14 +25,15 @@ const Experience: React.FC<ExperienceProps> = ({ mode }) => {
       </group>
 
       {/* Cinematic Post Processing */}
-      <EffectComposer disableNormalPass>
+      {/* Note: disableNormalPass removed for better compatibility */}
+      <EffectComposer>
         <Bloom 
           luminanceThreshold={0.15} 
           mipmapBlur 
           intensity={0.6} 
           radius={0.5} 
         />
-        <Vignette eskil={false} offset={0.1} darkness={1.2} />
+        <Vignette eskil={false} offset={0.1} darkness={1.1} />
         <Noise opacity={0.05} />
       </EffectComposer>
     </>
