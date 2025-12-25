@@ -1,6 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { ThreeElements } from '@react-three/fiber';
+
+// Augment the JSX namespace to include Three.js elements for React Three Fiber
+declare global {
+  namespace JSX {
+    interface IntrinsicElements extends ThreeElements {}
+  }
+}
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
