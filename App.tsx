@@ -4,12 +4,10 @@ import { OrbitControls } from '@react-three/drei';
 import Experience from './components/Experience';
 import GestureHandler from './components/GestureHandler';
 import CosmicBackground from './components/CosmicBackground';
-import GiftBox from './components/GiftBox';
 
 export type AppMode = 'tree' | 'scatter';
 
 const App: React.FC = () => {
-  const [hasStarted, setHasStarted] = useState(false); // Intro state
   const [mode, setMode] = useState<AppMode>('tree');
   
   // Music State
@@ -46,19 +44,15 @@ const App: React.FC = () => {
     setIsPlaying(!isPlaying);
   };
 
-  // Gift Box Open Handler
-  const handleGiftOpen = () => {
-    setHasStarted(true);
-  };
-
   return (
     <div className="w-full h-screen bg-black relative overflow-hidden">
       
-      {/* --- UI LAYER (Fades in after start) --- */}
-      <div className={`transition-opacity duration-1000 ease-in-out ${hasStarted ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      {/* --- UI LAYER --- */}
+      {/* Wrapper with pointer-events-none to allow clicking through to canvas, but enable children interaction */}
+      <div className="absolute inset-0 z-10 pointer-events-none">
         
         {/* Top Left: Dedication & Title */}
-        <div className="absolute top-8 left-8 z-10 flex flex-col items-start pointer-events-none select-none">
+        <div className="absolute top-8 left-8 flex flex-col items-start select-none">
             <h1 className="text-3xl md:text-5xl text-amber-100/90 font-cinzel tracking-[0.2em] mb-2 drop-shadow-[0_0_15px_rgba(255,215,0,0.3)]">
             MERRY CHRISTMAS
             </h1>
@@ -68,8 +62,8 @@ const App: React.FC = () => {
             </p>
         </div>
 
-        {/* Bottom Left: Music Controls */}
-        <div className="absolute bottom-8 left-8 z-50 flex flex-col gap-3 items-start">
+        {/* Bottom Left: Music Controls (Enable pointer events) */}
+        <div className="absolute bottom-8 left-8 flex flex-col gap-3 items-start pointer-events-auto">
             <audio ref={audioRef} onEnded={() => setIsPlaying(false)} loop />
             <input 
                 type="file" 
@@ -104,7 +98,7 @@ const App: React.FC = () => {
         </div>
         
         {/* Center Left: Instructions */}
-        <div className="absolute top-1/2 left-8 -translate-y-1/2 z-10 hidden md:flex flex-col gap-6 pointer-events-none transition-opacity duration-1000 opacity-100">
+        <div className="absolute top-1/2 left-8 -translate-y-1/2 hidden md:flex flex-col gap-6 transition-opacity duration-1000 opacity-100">
             <div className={`transition-all duration-700 ${mode === 'tree' ? 'opacity-100 translate-x-0' : 'opacity-30 -translate-x-4'}`}>
                 <span className="block text-amber-500 font-cinzel text-xs tracking-widest mb-1">FIST</span>
                 <span className="block text-white/80 font-times italic text-sm">Aggregate & Form</span>
@@ -115,18 +109,9 @@ const App: React.FC = () => {
             </div>
         </div>
 
-        {/* Gesture Handler UI (Visible only after start) */}
+        {/* Gesture Handler UI */}
         <GestureHandler onModeChange={handleModeChange} />
       </div>
-
-      {/* --- INTRO UI --- */}
-      {!hasStarted && (
-        <div className="absolute top-[70%] left-1/2 -translate-x-1/2 z-20 pointer-events-none transition-opacity duration-500">
-             <p className="text-amber-200/60 font-cinzel tracking-[0.3em] text-xs animate-pulse text-center">
-                TAP THE GIFT TO OPEN
-             </p>
-        </div>
-      )}
 
       {/* --- 3D SCENE --- */}
       <Canvas
@@ -144,21 +129,12 @@ const App: React.FC = () => {
         <color attach="background" args={['#000000']} />
         
         <Suspense fallback={null}>
-            {/* Background & Atmosphere (Persistent) */}
+            {/* Background & Atmosphere */}
             <CosmicBackground />
             <fogExp2 attach="fog" args={['#000000', 0.015]} />
 
-            {/* INTRO: Gift Box */}
-            {!hasStarted && (
-                <group position={[0, 1.5, 12]}>
-                    <GiftBox onOpen={handleGiftOpen} />
-                    <ambientLight intensity={0.5} />
-                    <pointLight position={[2, 5, 5]} intensity={1} color="#ffecd1" />
-                </group>
-            )}
-
             {/* MAIN: Experience */}
-            {hasStarted && <Experience mode={mode} />}
+            <Experience mode={mode} />
         </Suspense>
 
         <OrbitControls 
@@ -166,9 +142,8 @@ const App: React.FC = () => {
             enableZoom={true} 
             minDistance={8} 
             maxDistance={25}
-            autoRotate={hasStarted && mode === 'tree'} 
+            autoRotate={mode === 'tree'} 
             autoRotateSpeed={0.5}
-            enabled={hasStarted} // Disable controls during intro
             target={[0, 1.5, 0]} 
         />
       </Canvas>
