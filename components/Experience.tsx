@@ -1,5 +1,5 @@
 import React from 'react';
-import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing';
+import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import TreeParticles from './TreeParticles';
 import StarParticles from './StarParticles';
 import { AppMode } from '../App';
@@ -11,10 +11,11 @@ interface ExperienceProps {
 const Experience: React.FC<ExperienceProps> = ({ mode }) => {
   return (
     <>
-      {/* Subtle Ambient Lighting for Scene */}
-      <ambientLight intensity={0.1} />
+      {/* Lights */}
+      <ambientLight intensity={0.5} />
+      <pointLight position={[10, 10, 10]} intensity={1.0} color="#ffecd1" />
       
-      {/* The Particle Tree with Morphing Logic */}
+      {/* The Particle Tree */}
       <group position={[0, -2.5, 0]}>
         <TreeParticles mode={mode} />
       </group>
@@ -24,17 +25,19 @@ const Experience: React.FC<ExperienceProps> = ({ mode }) => {
         <StarParticles />
       </group>
 
-      {/* Cinematic Post Processing */}
-      {/* Note: disableNormalPass removed for better compatibility */}
-      <EffectComposer>
+      {/* 
+         CRITICAL FIX FOR BLACK SCREEN:
+         1. disableNormalPass={true}: Particles don't have normals, trying to calculate them causes glitches.
+         2. multisampling={0}: Prevents MSAA conflicts in the composition buffer which often cause black screens on mobile/web.
+      */}
+      <EffectComposer disableNormalPass multisampling={0}>
         <Bloom 
-          luminanceThreshold={0.15} 
+          luminanceThreshold={0.2} 
           mipmapBlur 
-          intensity={0.6} 
-          radius={0.5} 
+          intensity={1.5} 
+          radius={0.6} 
         />
-        <Vignette eskil={false} offset={0.1} darkness={1.1} />
-        <Noise opacity={0.05} />
+        <Vignette eskil={false} offset={0.1} darkness={0.8} />
       </EffectComposer>
     </>
   );

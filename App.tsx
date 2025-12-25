@@ -10,7 +10,7 @@ export type AppMode = 'tree' | 'scatter';
 // Simple Loader Component
 const Loader = () => (
   <Html center>
-    <div className="flex flex-col items-center justify-center">
+    <div className="flex flex-col items-center justify-center pointer-events-none">
       <div className="w-12 h-12 border-4 border-amber-500/30 border-t-amber-500 rounded-full animate-spin mb-4"></div>
       <p className="text-amber-500 font-cinzel text-sm tracking-widest animate-pulse">LOADING EXPERIENCE...</p>
     </div>
@@ -128,10 +128,10 @@ const App: React.FC = () => {
         camera={{ position: [0, 1.5, 18], fov: 40, near: 0.1, far: 100 }}
         gl={{ 
           antialias: true,
-          alpha: false, // Ensure black background is rendered
+          alpha: false,
           stencil: false,
           depth: true,
-          toneMappingExposure: 1.5 // Slightly increased exposure
+          powerPreference: "high-performance",
         }}
       >
         <color attach="background" args={['#000000']} />

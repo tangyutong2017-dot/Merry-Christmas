@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect } from 'react';
+import React, { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { AppMode } from '../App';
@@ -36,6 +36,8 @@ const TreeParticles: React.FC<TreeParticlesProps> = ({ mode }) => {
     const scatterVel = new Float32Array(TREE_PARTICLE_COUNT * 3);
     
     const colors = new Float32Array(TREE_PARTICLE_COUNT * 3);
+    // Note: Standard PointsMaterial uses 'size' prop, but we calculate sizes array 
+    // in case we switch to a custom shader later. For now we use a larger global size.
     const sizes = new Float32Array(TREE_PARTICLE_COUNT);
 
     const tempColor = new THREE.Color();
@@ -59,17 +61,14 @@ const TreeParticles: React.FC<TreeParticlesProps> = ({ mode }) => {
 
       // --- Luxury Color Logic ---
       const isOuterShell = rMax > 0.1 && (r / rMax) > 0.85;
-
       const isLight = Math.random() > 0.88; // 12% are bulbs
 
       if (isLight) {
         if (isOuterShell && Math.random() > 0.4) {
             tempColor.copy(COLOR_LUXURY_GOLD);
-            sizes[i] = Math.random() * 6 + 5;
         } else {
             const lightCol = LIGHT_COLORS[Math.floor(Math.random() * LIGHT_COLORS.length)];
             tempColor.copy(lightCol);
-            sizes[i] = Math.random() * 5 + 3;
         }
       } else {
         if (isOuterShell && Math.random() > 0.45) {
@@ -77,12 +76,9 @@ const TreeParticles: React.FC<TreeParticlesProps> = ({ mode }) => {
             const shade = Math.random();
             if (shade > 0.8) tempColor.offsetHSL(0, 0, 0.2); 
             else tempColor.multiplyScalar(0.8); 
-
-            sizes[i] = Math.random() * 3 + 1.5; 
         } else {
             const mix = Math.random();
             tempColor.lerpColors(COLOR_INK_GREEN_DARK, COLOR_INK_GREEN_LIGHT, mix * mix);
-            sizes[i] = Math.random() * 4 + 1;
         }
       }
 
@@ -105,10 +101,8 @@ const TreeParticles: React.FC<TreeParticlesProps> = ({ mode }) => {
   }, [targets]);
 
   // Ribbon setup
-  const { ribbonPositions, ribbonSizes } = useMemo(() => {
+  const { ribbonPositions } = useMemo(() => {
     const pos = new Float32Array(RIBBON_PARTICLE_COUNT * 3);
-    const sz = new Float32Array(RIBBON_PARTICLE_COUNT);
-
     for (let i = 0; i < RIBBON_PARTICLE_COUNT; i++) {
       const t = i / RIBBON_PARTICLE_COUNT;
       const h = t * TREE_HEIGHT;
@@ -121,10 +115,8 @@ const TreeParticles: React.FC<TreeParticlesProps> = ({ mode }) => {
       pos[i * 3] = (ribbonR + (Math.random()-0.5)*spread) * Math.cos(theta);
       pos[i * 3 + 1] = h + (Math.random()-0.5)*spread;
       pos[i * 3 + 2] = (ribbonR + (Math.random()-0.5)*spread) * Math.sin(theta);
-
-      sz[i] = Math.random() * 2 + 0.5;
     }
-    return { ribbonPositions: pos, ribbonSizes: sz };
+    return { ribbonPositions: pos };
   }, []);
 
 
@@ -198,15 +190,10 @@ const TreeParticles: React.FC<TreeParticlesProps> = ({ mode }) => {
             array={targets.colors}
             itemSize={3}
           />
-          <bufferAttribute
-            attach="attributes-size"
-            count={TREE_PARTICLE_COUNT}
-            array={targets.sizes}
-            itemSize={1}
-          />
         </bufferGeometry>
+        {/* Increased Size for Visibility */}
         <pointsMaterial
-          size={0.2} // Increased from 0.15 for better visibility
+          size={0.12} 
           vertexColors
           transparent
           opacity={0.9}
@@ -225,16 +212,10 @@ const TreeParticles: React.FC<TreeParticlesProps> = ({ mode }) => {
             array={ribbonPositions}
             itemSize={3}
           />
-           <bufferAttribute
-            attach="attributes-size"
-            count={RIBBON_PARTICLE_COUNT}
-            array={ribbonSizes}
-            itemSize={1}
-          />
         </bufferGeometry>
         <pointsMaterial
           color="#ffffff" 
-          size={0.15} // Increased size
+          size={0.1}
           transparent
           opacity={0.6}
           sizeAttenuation={true}
