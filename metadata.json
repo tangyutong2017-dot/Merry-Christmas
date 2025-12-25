@@ -1,0 +1,7 @@
+{
+  "name": "Copy of Cinematic Particle Christmas Tree",
+  "description": "A 3D interactive Christmas tree composed of thousands of particles with a blinking golden star, set in a cinematic dark environment.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
