@@ -2,22 +2,23 @@ import React, { Suspense, useState, useCallback, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
 import Experience from './components/Experience';
+import GiftBox from './components/GiftBox';
 import GestureHandler from './components/GestureHandler';
 import CosmicBackground from './components/CosmicBackground';
 
 export type AppMode = 'tree' | 'scatter';
 
-// Simple Loader Component
+// Simple Loader Component - Minimalist
 const Loader = () => (
   <Html center>
-    <div className="flex flex-col items-center justify-center pointer-events-none">
-      <div className="w-12 h-12 border-4 border-amber-500/30 border-t-amber-500 rounded-full animate-spin mb-4"></div>
-      <p className="text-amber-500 font-cinzel text-sm tracking-widest animate-pulse">LOADING EXPERIENCE...</p>
+    <div className="text-amber-500/80 font-cinzel text-sm tracking-[0.2em] animate-pulse whitespace-nowrap">
+      LOADING...
     </div>
   </Html>
 );
 
 const App: React.FC = () => {
+  const [started, setStarted] = useState(false);
   const [mode, setMode] = useState<AppMode>('tree');
   
   // Music State
@@ -106,8 +107,8 @@ const App: React.FC = () => {
             </button>
         </div>
         
-        {/* Center Left: Instructions */}
-        <div className="absolute top-1/2 left-8 -translate-y-1/2 hidden md:flex flex-col gap-6 transition-opacity duration-1000 opacity-100">
+        {/* Center Left: Instructions (Only visible after start) */}
+        <div className={`absolute top-1/2 left-8 -translate-y-1/2 hidden md:flex flex-col gap-6 transition-opacity duration-1000 ${started ? 'opacity-100' : 'opacity-0'}`}>
             <div className={`transition-all duration-700 ${mode === 'tree' ? 'opacity-100 translate-x-0' : 'opacity-30 -translate-x-4'}`}>
                 <span className="block text-amber-500 font-cinzel text-xs tracking-widest mb-1">FIST</span>
                 <span className="block text-white/80 font-times italic text-sm">Aggregate & Form</span>
@@ -118,8 +119,17 @@ const App: React.FC = () => {
             </div>
         </div>
 
-        {/* Gesture Handler UI */}
-        <GestureHandler onModeChange={handleModeChange} />
+        {/* Center: Open Instruction (Only before start) */}
+        {!started && (
+            <div className="absolute top-[65%] left-1/2 -translate-x-1/2 text-center animate-bounce pointer-events-none">
+                <p className="text-amber-200/80 font-cinzel text-sm tracking-[0.3em] uppercase drop-shadow-md">
+                    Tap to Open
+                </p>
+            </div>
+        )}
+
+        {/* Gesture Handler UI (Only active after start) */}
+        {started && <GestureHandler onModeChange={handleModeChange} />}
       </div>
 
       {/* --- 3D SCENE --- */}
@@ -139,7 +149,13 @@ const App: React.FC = () => {
         <Suspense fallback={<Loader />}>
             <CosmicBackground />
             <fogExp2 attach="fog" args={['#000000', 0.015]} />
-            <Experience mode={mode} />
+            
+            {/* Transition Logic */}
+            {!started ? (
+                <GiftBox onOpen={() => setStarted(true)} />
+            ) : (
+                <Experience mode={mode} />
+            )}
         </Suspense>
 
         <OrbitControls 
@@ -147,8 +163,8 @@ const App: React.FC = () => {
             enableZoom={true} 
             minDistance={8} 
             maxDistance={25}
-            autoRotate={mode === 'tree'} 
-            autoRotateSpeed={0.5}
+            autoRotate={mode === 'tree' || !started} 
+            autoRotateSpeed={!started ? 1.0 : 0.5}
             target={[0, 1.5, 0]} 
         />
       </Canvas>
